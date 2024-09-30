@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Director</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .pelicula {
+            margin-bottom: 20px;
+        }
+
+        .rating {
+            font-weight: bold;
+            color: #726961;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="nombre-director"></h1>
+        <img id="imagen-director" src="" alt="Imagen del Director">
+        <h2>Películas Dirigidas</h2>
+        <ul id="lista-peliculas"></ul>
+    </div>
+
+    <script>
+        async function fetchDirectorDetails(directorId) {
+            try {
+                const response = await fetch(`http://localhost:5015/directores/${directorId}`);
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta de la red');
+                }
+                const director = await response.json();
+                document.getElementById('nombre-director').textContent = director.nombre;
+                document.getElementById('imagen-director').src = `http://localhost:5015${director.imagen}`;
+            } catch (error) {
+                console.error('Error al obtener los detalles del director:', error);
+            }
+        }
+
+        async function fetchDirectorMovies(directorId) {
+            try {
+                const response = await fetch(`http://localhost:5015/peliculas/director/${directorId}`);
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta de la red');
+                }
+                const peliculas = await response.json();
+                const listaPeliculas = document.getElementById('lista-peliculas');
+                listaPeliculas.innerHTML = '';
+                if (peliculas.length > 0) {
+                    peliculas.forEach(pelicula => {
+                        const peliculaElement = document.createElement('div');
+                        peliculaElement.className = 'pelicula';
+                        peliculaElement.innerHTML = `
+                            <strong><a href="http://127.0.0.1:5500/FrontEnd/Peliculas/detallesPelicula.html?id=${pelicula.id}">${pelicula.nombre}</a></strong><br>
+                            ${pelicula.imagen ? `<img src="http://localhost:5015${pelicula.imagen}" alt="${pelicula.nombre}">` : ''}
+                            <div class="rating">Calificación: ${pelicula.calificacion}</div>
+                        `;
+                        listaPeliculas.appendChild(peliculaElement);
+                    });
+                } else {
+                    listaPeliculas.textContent = 'No hay películas asociadas a este director.';
+                }
+            } catch (error) {
+                console.error('Error al obtener las películas del director:', error);
+            }
+        }
+
+        async function fetchDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const directorId = params.get('id');
+
+            if (directorId) {
+                await fetchDirectorDetails(directorId);
+
+                await fetchDirectorMovies(directorId);
+            } else {
+                console.error('No se proporcionó el ID del director en la URL');
+            }
+        }
+
+        window.onload = fetchDetails;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Director a Película</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>Asignar Director a Película</h1>
+
+        <form id="directorForm">
+            <label for="directorId">Selecciona un Director:</label>
+            <select id="directorId" name="directorId" required>
+
+            </select>
+
+            <button type="submit">Asignar Director</button>
+        </form>
+
+    </div>
+    <script>
+        function obtenerPeliculaIdDesdeURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        async function cargarDirectores() {
+            try {
+                const response = await fetch('http://localhost:5015/directores');
+                const directores = await response.json();
+
+                const directorSelect = document.getElementById('directorId');
+
+
+                directores.forEach(director => {
+                    const option = document.createElement('option');
+                    option.value = director.id;
+                    option.textContent = director.nombre;
+                    directorSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar directores:', error);
+            }
+        }
+
+        window.onload = cargarDirectores;
+
+
+        document.getElementById('directorForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+
+            const peliculaId = obtenerPeliculaIdDesdeURL();
+            const directorId = document.getElementById('directorId').value;
+
+            if (!peliculaId) {
+                alert('No se encontró el ID de la película en la URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5015/peliculas/${peliculaId}/director`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ directorId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Director asignado correctamente: ${data.pelicula.nombre}`);
+                } else {
+                    alert('Error al asignar director.');
+                }
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

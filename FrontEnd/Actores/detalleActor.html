@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Actor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="nombre-actor"></h1>
+        <img id="imagen-actor" src="" alt="Imagen del Actor">
+        <h2>Películas</h2>
+        <ul id="lista-peliculas"></ul>
+    </div>
+
+    <script>
+        async function fetchActorDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const actorId = params.get('id');
+            try {
+                const response = await fetch(`http://localhost:5015/actores/${actorId}`);
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta de la red');
+                }
+                const actor = await response.json();
+                document.getElementById('nombre-actor').textContent = actor.nombre;
+                document.getElementById('imagen-actor').src = `http://localhost:5015${actor.imagen}`;
+
+
+                const listaPeliculas = document.getElementById('lista-peliculas');
+                listaPeliculas.innerHTML = '';
+                if (actor.peliculas && actor.peliculas.length > 0) {
+                    actor.peliculas.forEach(pelicula => {
+                        const peliculaElement = document.createElement('div');
+                    peliculaElement.className = 'pelicula';
+                    peliculaElement.innerHTML = `
+                        <strong><a href="http://127.0.0.1:5500/FrontEnd/Peliculas/detallesPelicula.html?id=${pelicula.id}">${pelicula.nombre}</a></strong><br>
+                        ${pelicula.imagen ? `<img src="http://localhost:5015${pelicula.imagen}" alt="${pelicula.nombre}">` : ''}
+                        <div class="rating">Calificación: ${pelicula.calificacion}</div>
+                    `;
+                        listaPeliculas.appendChild(peliculaElement);
+                    });
+                } else {
+                    listaPeliculas.textContent = 'No hay películas asociadas a este actor.';
+                }
+            } catch (error) {
+                console.error('Error al obtener los detalles del actor:', error);
+            }
+        }
+
+
+        window.onload = fetchActorDetails;
+    </script>
+</body>
+
+</html>

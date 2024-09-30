@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de la Película</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .actor,
+        .director {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .actor img,
+        .director img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="nombre-pelicula"></h1>
+        <img id="imagen-pelicula" src="" alt="">
+        <p><strong>Sinopsis:</strong> <span id="sinopsis-pelicula"></span></p>
+        <p><strong>Fecha de Lanzamiento:</strong> <span id="fecha-pelicula"></span></p>
+        <p><strong>Calificación:</strong> <span id="calificacion-pelicula"></span></p>
+        <p><strong>Tráiler:</strong></p>
+        <iframe id="trailer-pelicula" src="" allowfullscreen></iframe>
+
+
+        <p><strong>Director:</strong></p>
+        <div id="director" class="director"></div>
+
+
+        <p><strong>Actores:</strong></p>
+        <ul id="lista-actores"></ul>
+    </div>
+
+    <script>
+        async function fetchPelicula() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            try {
+                const response = await fetch(`http://localhost:5015/peliculas/${id}`);
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta de la red');
+                }
+                const pelicula = await response.json();
+                document.getElementById('nombre-pelicula').textContent = pelicula.nombre;
+                document.getElementById('imagen-pelicula').src = pelicula.imagen;
+                document.getElementById('sinopsis-pelicula').textContent = pelicula.sinopsis;
+                document.getElementById('fecha-pelicula').textContent = pelicula.fechaLanzamiento;
+                document.getElementById('calificacion-pelicula').textContent = pelicula.calificacion;
+
+
+                const trailerUrl = pelicula.trailer;
+                const youtubeId = trailerUrl.split('v=')[1];
+                const embedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+                document.getElementById('trailer-pelicula').src = embedUrl;
+
+                const directorDiv = document.getElementById('director');
+                if (pelicula.director) {
+                    directorDiv.innerHTML = `
+                        <img src="http://localhost:5015${pelicula.director.imagen}" alt="${pelicula.director.nombre}">
+                        <a href="http://127.0.0.1:5500/FrontEnd/Directores/detalleDirector.html?id=${pelicula.director.id}">${pelicula.director.nombre}</a>
+                    `;
+                } else {
+                    directorDiv.textContent = 'No hay director asociado a esta película.';
+                }
+
+
+                const listaActores = document.getElementById('lista-actores');
+                listaActores.innerHTML = '';
+                if (pelicula.actores && pelicula.actores.length > 0) {
+                    pelicula.actores.forEach(actor => {
+                        const li = document.createElement('li');
+                        li.classList.add('actor');
+                        li.innerHTML = `
+                            <img src="http://localhost:5015${actor.imagen}" alt="${actor.nombre}">
+                            <a href="http://127.0.0.1:5500/FrontEnd/Actores/detalleActor.html?id=${actor.id}">${actor.nombre}</a>
+                        `;
+                        listaActores.appendChild(li);
+                    });
+                } else {
+                    listaActores.textContent = 'No hay actores asociados a esta película.';
+                }
+            } catch (error) {
+                console.error('Error al obtener la película:', error);
+            }
+        }
+
+
+        window.onload = fetchPelicula;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Película</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+        }
+
+        label {
+            margin-bottom: 5px;
+        }
+
+        input,
+        textarea {
+            margin-bottom: 15px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>Editar Película</h1>
+        <form id="miFormulario">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="sinopsis">Sinopsis:</label>
+            <textarea id="sinopsis" name="sinopsis" required></textarea>
+
+            <label for="fechaLanzamiento">Fecha de Lanzamiento:</label>
+            <input type="date" id="fechaLanzamiento" name="fechaLanzamiento" required>
+
+            <label for="calificacion">Calificación:</label>
+            <input type="number" id="calificacion" name="calificacion" min="0" max="100" required>
+
+            <label for="trailer">Trailer:</label>
+            <input type="url" id="trailer" name="trailer" required>
+
+            <button type="submit">Actualizar Película</button>
+        </form>
+
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const formulario = document.getElementById("miFormulario");
+
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const idPelicula = urlParams.get("id");
+
+
+            cargarPelicula(idPelicula);
+
+            formulario.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+
+                const datosPelicula = {
+                    nombre: formulario.nombre.value,
+                    sinopsis: formulario.sinopsis.value,
+                    fechaLanzamiento: formulario.fechaLanzamiento.value,
+                    calificacion: parseInt(formulario.calificacion.value),
+                    trailer: formulario.trailer.value,
+                };
+
+
+                try {
+                    const respuesta = await fetch(`http://localhost:5015/peliculas/${idPelicula}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(datosPelicula),
+                    });
+
+                    if (!respuesta.ok) {
+                        throw new Error("Error al actualizar la película");
+                    }
+
+                    const peliculaActualizada = await respuesta.json();
+                    console.log("Película actualizada:", peliculaActualizada);
+                    alert("Película actualizada con éxito!");
+                } catch (error) {
+                    console.error("Error al actualizar la película:", error);
+                    alert("Error al actualizar la película: " + error.message);
+                }
+            });
+        });
+
+
+        async function cargarPelicula(id) {
+            try {
+                const respuesta = await fetch(`http://localhost:5015/peliculas/${id}`);
+                if (!respuesta.ok) {
+                    throw new Error("Error al obtener la película");
+                }
+                const pelicula = await respuesta.json();
+
+                document.getElementById("nombre").value = pelicula.nombre;
+                document.getElementById("sinopsis").value = pelicula.sinopsis;
+                document.getElementById("fechaLanzamiento").value = pelicula.fechaLanzamiento.split('T')[0]; // Formato YYYY-MM-DD
+                document.getElementById("calificacion").value = pelicula.calificacion;
+                document.getElementById("trailer").value = pelicula.trailer;
+            } catch (error) {
+                console.error("Error al cargar la película:", error);
+                alert("Error al cargar la película: " + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

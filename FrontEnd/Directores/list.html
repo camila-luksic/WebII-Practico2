@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Directores</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            background-image: url('/public/fondo.avif');
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #ffffff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4c9baf;
+            color: white;
+            font-weight: bold;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #d32f2f;
+        }
+        .acciones {
+            display: flex;
+            gap: 10px;
+        }
+        .no-data {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Directores</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="directores-list">
+            <tr class="no-data"><td colspan="4">Cargando directores...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchDirectores() {
+            try {
+                const response = await fetch('http://localhost:5015/directores/');
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta de la red');
+                }
+                const directores = await response.json();
+                const directoresList = document.getElementById('directores-list');
+                directoresList.innerHTML = ''; 
+
+                if (directores.length === 0) {
+                    directoresList.innerHTML = '<tr class="no-data"><td colspan="4">No hay directores disponibles</td></tr>';
+                    return;
+                }
+
+                directores.forEach(director => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${director.nombre}</td>
+                        <td>${director.imagen ? `<img src="http://localhost:5015${director.imagen}" alt="${director.nombre}">` : 'Sin imagen'}</td>
+        
+                        <td class="acciones">
+                            <button onclick="editarDirector(${director.id})">Editar</button>
+                            <button onclick="eliminarDirector(${director.id})">Eliminar</button>
+                        </td>
+                    `;
+                    directoresList.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error al obtener los directores:', error);
+                document.getElementById('directores-list').innerHTML = '<tr class="no-data"><td colspan="4">Error al cargar directores</td></tr>';
+            }
+        }
+
+        function editarDirector(id) {
+            window.location.href = `editar.html?id=${id}`;
+        }
+
+        async function eliminarDirector(id) {
+            const confirmacion = confirm('¿Estás seguro de que deseas eliminar este director?');
+            if (confirmacion) {
+                try {
+                    const response = await fetch(`http://localhost:5015/directores/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) {
+                        throw new Error('Error al eliminar el director');
+                    }
+                    alert('Director eliminado con éxito');
+                    fetchDirectores(); 
+                } catch (error) {
+                    console.error('Error al eliminar el director:', error);
+                }
+            }
+        }
+
+        window.onload = fetchDirectores;
+    </script>
+</body>
+</html>

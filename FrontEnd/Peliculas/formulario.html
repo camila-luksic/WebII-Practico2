@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Película</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            background-image: url('/public/fondo.avif');
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Nueva Película</h1>
+        <form id="crearPeliculaForm">
+            <div class="form-group">
+                <label for="nombre">Nombre de la película</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Ingrese el nombre de la película" required>
+            </div>
+            <div class="form-group">
+                <label for="sinopsis">Sinopsis</label>
+                <textarea id="sinopsis" name="sinopsis" placeholder="Escriba una breve descripción de la película"
+                    required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="fechaLanzamiento">Fecha de lanzamiento</label>
+                <input type="date" id="fechaLanzamiento" name="fechaLanzamiento" required>
+            </div>
+            <div class="form-group">
+                <label for="calificacion">Calificación</label>
+                <input type="number" id="calificacion" name="calificacion" placeholder="Ingrese la calificacion"
+                    required>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Trailer de la película</label>
+                <input type="text" id="trailer" name="trailer" placeholder="Ingrese el link del trailer de la película"
+                    required>
+            </div>
+
+            <button type="submit">Crear Película</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('crearPeliculaForm').onsubmit = function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('http://localhost:5015/peliculas/', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        console.log("---" + data.id)
+                        console.log(`/FrontEnd/Peliculas/subirImagen.html?id=${data.id}`);
+
+
+                        window.location.href = `subirImagen.html?id=${data.id}`;
+
+                    } else if (data.message) {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        };
+    </script>
+
+</body>
+
+</html>

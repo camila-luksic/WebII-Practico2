@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Película con Imagen</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Agregar Imagen</h1>
+        <form id="crearPeliculaForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="imagen">Subir imagen de la película</label>
+                <input type="file" id="imagen" name="imagen" accept="image/*" required>
+            </div>
+
+            <button type="submit">Agregar Imagen</button>
+        </form>
+    </div>
+
+    <script>
+
+        function obtenerIdPelicula() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        document.getElementById('crearPeliculaForm').onsubmit = function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const idPelicula = obtenerIdPelicula();
+
+            if (!idPelicula) {
+                alert("No se ha encontrado el ID de la película.");
+                return;
+            }
+
+
+            fetch(`http://localhost:5015/peliculas/${idPelicula}/img`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                    } else {
+                        alert('Imagen agregada con éxito');
+
+                        window.location.href = 'http://127.0.0.1:5500/FrontEnd/indexAdmin.html';
+
+
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        };
+    </script>
+
+</body>
+
+</html>
